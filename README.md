@@ -1,58 +1,51 @@
-# Remult-React-Todo
+# React Table Fullstack example
 
-This project is based on the remult tutorial  [Todo App with React
-](https://remult.github.io/guide/setup-react.html) and saves all the work of doing the step by step setup.
-
-Simply open a command line and run the following commands to setup:
+To add to your project:
 ```sh
-git clone https://github.com/remult/remult-react-todo.git
-cd remult-react-todo
-npm i
+npm i react-table
+npm i -D @types/react-table 
 ```
 
-Once it's done, open two terminals to run:
-1. The api server
-   ```
-   npm run dev-node
-   ```
-2. The React dev cli
-   ``` 
-   npm run dev-react
-   ```
-
-And proceed to the [Entities](https://remult.github.io/guide/setup-remult.html#entities) section of the tutorials
-
-# What does it do?
-You can see the diff using [github compare](https://github.com/remult/remult-react-todo/compare/first-commit...master)
+Add the following files to your project:
+1. [react-table-config.d.ts](https://github.com/remult/react-table-fullstack-example/blob/master/src/react-table-utils/react-table-config.d.ts) - A typescript definition file that adds support for react table filter, sort etc....
+2. [remult-react-table](https://github.com/remult/react-table-fullstack-example/blob/master/src/react-table-utils/remult-react-table.ts) - the code for `useRemultReactTable`
 
 
-# To add swagger and graphql
-```sh
-npm i graphql express-graphql swagger-ui-express
-npm i --save-dev @types/swagger-ui-express
+## React 17
+Note that `react-table` only supports React 17 at this time.
+
+To downgrade a `create-react-app` project to React 17 change the dependencies `package.json`
+```json
+    "@testing-library/jest-dom": "^5.16.1",
+    "@testing-library/react": "^12.1.2",
+    "@types/jest": "^27.4.0",
+    "@types/node": "^16.11.19",
+    "@types/react": "^17.0.38",
+    "@types/react-dom": "^17.0.11",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "typescript": "^4.5.4",
+    "web-vitals": "^2.1.3"
 ```
-And replace index.ts with:
-```ts
-import express from 'express';
-import swaggerUi from 'swagger-ui-express';
-import { buildSchema } from 'graphql';
-import { graphqlHTTP } from 'express-graphql';
-import { remultGraphql } from 'remult/graphql';
-import { remultExpress } from 'remult/remult-express';
 
-let app = express();
-let api = remultExpress();
-app.use(api);
+And change the `index.tsx` to 
+```tsx
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
 
-app.use('/api/docs', swaggerUi.serve,
-    swaggerUi.setup(api.openApiDoc({ title: 'remult-react-todo' })));
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root')
+);
 
-const { schema, rootValue } = remultGraphql(api);
-app.use('/api/graphql', graphqlHTTP({
-    schema: buildSchema(schema),
-    rootValue,
-    graphiql: true,
-}));
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
 
-app.listen(3002, () => console.log("Server started"));
 ```
