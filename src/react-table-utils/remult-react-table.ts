@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { Column, Filters, SortingRule, TableState } from "react-table";
 import { ContainsStringValueFilter, OmitEB, Repository } from "remult";
 
@@ -7,12 +7,16 @@ export function useRemultReactTable<entityType extends object>(
     const [data, setData] = useState<entityType[]>(() => []);
     const [count, setCount] = useState(0);
     const [filters, setFilters] = useState([] as Filters<entityType>);
-    const [sort, setSort] = useState([] as Array<SortingRule<entityType>>);
+    //  const [sort, setSort] = useState([] as Array<SortingRule<entityType>>);
     const [loading, setLoading] = useState(false);
     const fetchIdRef = useRef(0);
     const [limit, setLimit] = useState(10);
     const [page, setPage] = useState(1);
-    const [pageCount, setPageCount] = useState(0)
+    const [pageCount, setPageCount] = useState(0);
+    const [sortBy, setSort] = useReducer((x: Array<SortingRule<entityType>>, y: Array<SortingRule<entityType>>) => {
+        return y;
+    }, [] as Array<SortingRule<entityType>>);
+
     useEffect(() => {
         let where: any = {};
         let orderBy: any = {};
@@ -22,7 +26,7 @@ export function useRemultReactTable<entityType extends object>(
                 $contains: f.value
             } as ContainsStringValueFilter
         }
-        for (const s of sort) {
+        for (const s of sortBy) {
             orderBy[s.id] = s.desc ? 'desc' : "asc";
         }
         (async () => {
@@ -47,7 +51,7 @@ export function useRemultReactTable<entityType extends object>(
                 }
             }
         })();
-    }, [filters, sort, limit, page]);
+    }, [filters, sortBy, limit, page]);
     const { columns, fields } = useMemo(
         () => {
             let buildFields: any = {}
@@ -84,15 +88,15 @@ export function useRemultReactTable<entityType extends object>(
             filters,
             pageSize: 10,
             pageIndex: 0
-        },
-        stateReducer: (state: TableState<entityType>) => {
+        } as Partial<TableState<entityType>>,
+        setReactTableState: (state: TableState<entityType>) => {
             if (state.filters !== filters)
                 setFilters(state.filters);
             if (state.pageIndex !== page - 1)
                 setPage(state.pageIndex + 1);
             if (state.pageSize !== limit)
                 setLimit(state.pageSize);
-            if (state.sortBy !== sort)
+            if (state.sortBy !== sortBy)
                 setSort(state.sortBy);
             return state;
         },
@@ -113,12 +117,8 @@ export interface RemultReactTableOptions<entityType extends object> {
     data: entityType[];
     columns: Column<entityType>[];
     manualFilters: boolean;
-    initialState: {
-        filters: Filters<entityType>;
-        pageSize: number;
-        pageIndex: number;
-    };
-    stateReducer: (state: TableState<entityType>) => TableState<entityType>;
+    initialState: Partial<TableState<entityType>>;
+    setReactTableState: (state: TableState<entityType>) => TableState<entityType>;
     loading: boolean;
     count: number;
     manualPagination: boolean;

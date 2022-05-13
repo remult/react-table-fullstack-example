@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { useTable, usePagination, useFilters, useSortBy } from "react-table";
 import { RemultReactTableOptions, useRemultReactTable } from "./react-table-utils/remult-react-table";
@@ -59,29 +59,7 @@ function DefaultColumnFilter({
   );
 }
 
-function Table() {
-  const options = useRemultReactTable(remult.repo(Person));
-  const columns = React.useMemo(
-    () => [
-      {
-        Header: "Name",
-        columns: [
-          options.fields.firstName,
-          options.fields.lastName
-        ]
-      },
-      {
-        Header: "Info",
-        columns: [
-          options.fields.age,
-          options.fields.visits,
-          options.fields.status,
-          options.fields.progress
-        ]
-      }
-    ],
-    []
-  );
+function Table({ options }: { options: RemultReactTableOptions<any> }) {
   const defaultColumn = React.useMemo(
     () => ({
       // Let's set up our default Filter UI
@@ -104,18 +82,19 @@ function Table() {
     previousPage,
     setPageSize,
     // Get the state from the instance
-    state: { pageIndex, pageSize }
+    state
   } = useTable(
     {
       ...options,
-      columns,
-
-      defaultColumn
+      defaultColumn,
+      stateReducer: s => s
     },
     useFilters,
     useSortBy,
     usePagination
   );
+  useEffect(() => { options.setReactTableState(state) }, [state]);
+  const { pageIndex, pageSize } = state;
 
 
   // Render the UI for your table
@@ -221,7 +200,28 @@ function Table() {
 
 
 function App() {
- 
+  const tableOptions = useRemultReactTable(remult.repo(Person));
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: "Name",
+        columns: [
+          tableOptions.fields.firstName,
+          tableOptions.fields.lastName
+        ]
+      },
+      {
+        Header: "Info",
+        columns: [
+          tableOptions.fields.age,
+          tableOptions.fields.visits,
+          tableOptions.fields.status,
+          tableOptions.fields.progress
+        ]
+      }
+    ],
+    []
+  );
 
   // We'll start our table without any data
 
@@ -230,7 +230,7 @@ function App() {
   return (
     <Styles>
       <Table
-    
+        options={{ ...tableOptions, columns }}
       />
     </Styles>
   );
