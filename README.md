@@ -1,5 +1,8 @@
 # React Table Fullstack example
 
+[Open on stackblitz](https://stackblitz.com/edit/node-lpxjwv?file=src/App.tsx)
+
+
 To add to your project:
 ```sh
 npm i react-table
